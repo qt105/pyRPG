@@ -1,85 +1,77 @@
-import customtkinter as Ctk
-from PIL import Image
-import os
+from tkinter import *
+from os import *
+import json
+import fight
+from fight import *
 
-save_path = "pyRPG/Savefile.txt"
+# Path variables
+savePath = 'pyRPG/Save.txt' # Defines the save Path
+contentPath = 'pyRPG/content/' # Defines the content Path, points to the content folder located in the main file
 
-Ctk.set_appearance_mode("dark")  # Modes: system (default), light, dark
-Ctk.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
+window = Tk()
+window.geometry("1280x720")
 
-main = Ctk.CTk()  # create CTk window like you do with the Tk window
-main.geometry("1024x576")
-main.resizable(False, False)
+window.rowconfigure(0, weight=1)
+window.rowconfigure(1, weight=1)
+window.columnconfigure(0, weight=1)
+window.columnconfigure(1, weight=1)
+window.columnconfigure(2, weight=1)
 
-menu_image_file = Ctk.CTkImage(
-    dark_image=Image.open("pyRPG\content\main_image_content.png"),
-    size=(674, 576)
-)
+# Frames
 
-menu_logo_file = Ctk.CTkImage(
-    dark_image=Image.open("pyRPG\content\main_logo_content.png"),
-    size=(345, 288)
-)
+top_left_frame = Frame(window, bg='black')
+top_left_frame.grid(row=0, column=0, sticky='nswe')
+bottom_left_frame = Frame(window, bg='gray')
+bottom_left_frame.grid(row=1, column=0, sticky='nswe')
+right_frame = Frame(window, bg='blue')
+right_frame.grid(row=0, column=1, sticky='nswe', rowspan=2, columnspan=2)
 
-# Functions
+# Images
+topLeftImage = PhotoImage(file=contentPath+"topLeftImage.png")  # Replace "top_image.png" with your image path
+top_left_image_label = Label(top_left_frame, image=topLeftImage)
+top_left_image_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-def create_new_game():
-    print("New Game")
-    dialog = Ctk.CTkInputDialog(text="What is your name?", title="Name")
-    player_name = str(dialog.get_input())
-    with open(save_path, "w") as save_file:
-        # Write content to the file
-        save_file.write("Player_name: " + player_name)
+rightImage = PhotoImage(file=contentPath+"rightImage.png")  # Replace "top_image.png" with your image path
+right_image_label = Label(right_frame, image=rightImage)
+right_image_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+# Commands, Triggered by pressing the respectives buttons on the main menu
+def new_game():
+    system('cls')
+    window.iconify()
+    print("What is your character's name?")
+    player_name = str(input('>'))
+    player = Entity(player_name, 1, 0, 250, 100, 100, 50, 10, 20, 15, 15, 30)
+    enemy = generate_random_enemy(player.level)
+    combat(player, enemy)
 
 def load_game():
-    print("Load Game")
+    pass
 
-def open_about_window():
-    # Create secondary (or popup) window.
-    about_window = Ctk.CTkToplevel()
-    about_window.title("About")
-    about_window.config(width=300, height=300)
-    # Create a button to close (destroy) this window.
-    button_close = Ctk.CTkButton(
-        about_window,
-        text="Close window",
-        command=about_window.destroy
+def about():
+    system('cls')
+    window.iconify()
+    print(
+        "This game was realised by:\n\n"
+        "Quentin Mireur\n"
+        "Nérilyne Chhem\n"
+        "Juan Salvador Alcorta"
     )
-    button_close.place(relx=0.5, rely=0.9, anchor=Ctk.CENTER)
 
 def exit_game():
-    print("Exit")
-    main.destroy()
     exit()
 
-# Main menu elements
-    # Menu Image
-menu_image = Ctk.CTkLabel(main, image=menu_image_file, text="")  # display image with a CTkLabel
-menu_image.place(relx=0.34, rely=0, anchor=Ctk.NW)
-    # Menu Logo
-menu_image = Ctk.CTkLabel(main, image=menu_logo_file, text="")  # display image with a CTkLabel
-menu_image.place(relx=0, rely=0, anchor=Ctk.NW)
+# Buttons
+newGame_button = Button(bottom_left_frame, text="New Game", command=new_game)
+newGame_button.place(relx=0.5, rely=0.2, anchor=CENTER)
 
-button_frame = Ctk.CTkFrame(master=main, width=345, height=288, corner_radius=10, bg_color="transparent")
-button_frame.pack(padx=0, pady=0)
-button_frame.place(relx=0, rely=1, anchor=Ctk.SW)
+loadGame_button = Button(bottom_left_frame, text="Load Game", command=load_game)
+loadGame_button.place(relx=0.5, rely=0.4, anchor=CENTER)
 
-new_game_button = Ctk.CTkButton(master=main, text="Create New Game", command=create_new_game, bg_color="#302c2c")
-new_game_button.place(relx=0.1, rely=0.6, anchor=Ctk.W)
+about_button = Button(bottom_left_frame, text="About", command=about)
+about_button.place(relx=0.5, rely=0.6, anchor=CENTER)
 
-load_game_button = Ctk.CTkButton(master=main, text="Load Game", command=load_game, bg_color="#302c2c")
-load_game_button.place(relx=0.1, rely=0.7, anchor=Ctk.W)
-load_game_button._state="disabled"
+exit_button = Button(bottom_left_frame, text="Exit Game", command=exit_game)
+exit_button.place(relx=0.5, rely=0.8, anchor=CENTER)
 
-about_button = Ctk.CTkButton(master=main, text="About", command=open_about_window, bg_color="#302c2c")
-about_button.place(relx=0.1, rely=0.8, anchor=Ctk.W)
-
-exit_button = Ctk.CTkButton(master=main, text="Exit", command=exit_game, bg_color="#302c2c")
-exit_button.pack(padx=20)
-exit_button.place(relx=0.1, rely=0.9, anchor=Ctk.W)
-
-# Main loop
-
-main.protocol("WM_DELETE_WINDOW", exit_game)
-main.mainloop()
+window.mainloop()
